@@ -124,6 +124,7 @@
             forward only;
             forwarders { {{ dns_forwarders }} };
           };
+      notify: reload bind
     - name: include local forwarders
       become: yes
       lineinfile:
@@ -131,8 +132,16 @@
         line: include "/etc/bind/forwarders.conf";
         regexp: forwarders\.conf
         insertafter: EOF
+      notify: reload bind
     - name: enable bind9
       systemd:
         name: bind9.service
         state: started
         enabled: yes
+
+  handlers:
+    - name: reload bind
+      become: yes
+      systemd:
+        name: bind9
+        state: reloaded
