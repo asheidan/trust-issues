@@ -39,7 +39,7 @@
         copy: yes
         src: "{{ certificate_file }}"
         dest: /home/vagrant/certificates
-        creates: /home/vagrant/certificates/P7S1Root.cer
+        creates: /home/vagrant/certificates/PW.txt
     - name: clean pw-file
       shell: tr -dc [:graph:] < PW.txt > clean_pw.txt
       args:
