@@ -1,0 +1,95 @@
+---
+- name: initial setup
+  hosts: all
+  become_method: sudo
+  tasks:
+    - name: increase runtime directory size
+      become: yes
+      lineinfile:
+        path: /etc/systemd/logind.conf
+        regexp: '^#?RuntimeDirectorySize='
+        line: 'RuntimeDirectorySize=15%'
+
+- name: openconnect
+  hosts: all
+  become_method: sudo
+  tasks:
+    - name: install openconnect
+      become: yes
+      apt:
+        name: openconnect
+    - name: create script
+      become: yes
+      template:
+        src: openconnect-script.sh.j2
+        dest: /home/vagrant/openconnect-script.sh
+        owner: vagrant
+        group: vagrant
+        mode: +x
+    - name: install unzip
+      become: yes
+      apt:
+        name: unzip
+    - name: create certificate directory
+      file:
+        path: /home/vagrant/certificates
+        state: directory
+    - name: copy certificates
+      unarchive:
+        copy: yes
+        src: "{{ certificate_file }}"
+        dest: /home/vagrant/certificates
+        exclude: VPN_upgrade_Deutsch-english_v4.1.pdf
+        creates: /home/vagrant/certificates/P7S1Root.cer
+    - name: clean pw-file
+      shell: tr -dc [:graph:] < PW.txt > clean_pw.txt
+      args:
+        chdir: /home/vagrant/certificates/
+        creates: /home/vagrant/certificates/clean_pw.txt
+    - file:
+        src: /home/vagrant/certificates/{{ personal_certificate_name }}
+        path: /home/vagrant/certificates/{{ vpn_user }}.pfx
+        state: link
+    - name: save user password
+      copy:
+        content: "{{ vpn_password }}"
+        dest: /home/vagrant/certificates/user_pw.txt
+
+- name: firewall
+  hosts: all
+  become_method: sudo
+  tasks:
+    - name: install iptables-persistent
+      become: yes
+      apt:
+        name: iptables-persistent
+    - name: enable routing
+      become: yes
+      lineinfile:
+        path: /etc/default/netfilter-persistent
+        line: ENABLE_ROUTING=1
+        regexp: ENABLE_ROUTING
+        insertafter: EOF
+    - name: enable masquerading
+      become: yes
+      iptables:
+        table: nat
+        chain: POSTROUTING
+        out_interface: tun+
+        jump: MASQUERADE
+      notify: save filter rules
+    - name: enable ip forwarding
+      become: yes
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        sysctl_set: yes
+        state: present
+        reload: yes
+    - name: make sure netfilter-persistent is active
+      systemd: name=netfilter-persistent.service enabled=yes
+
+  handlers:
+    - name: save filter rules
+      become: yes
+      shell: iptables-save > /etc/iptables/rules.v4
