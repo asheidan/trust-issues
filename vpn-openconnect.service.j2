@@ -4,12 +4,13 @@ After=network.target
 Requires=networking.service
 
 [Service]
-Type=simple
+Type=fork
 ExecStart=/home/vagrant/openconnect-script.sh
 ExecReload=/bin/kill -USR2 $MAINPID
 ExecStop=/bin/kill -INT $MAINPID
 
 Restart=on-success
+RestartSec=10
 SuccessExitStatus=1
 
 PIDFile=/var/run/openconnect.pid
