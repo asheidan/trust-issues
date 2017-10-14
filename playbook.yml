@@ -1,6 +1,6 @@
 ---
 - name: initial setup
-  hosts: all
+  hosts: default
   become_method: sudo
   tasks:
     - name: increase runtime directory size
@@ -11,7 +11,7 @@
         line: 'RuntimeDirectorySize=15%'
 
 - name: openconnect
-  hosts: all
+  hosts: default
   become_method: sudo
   tasks:
     - name: install openconnect
@@ -39,7 +39,6 @@
         copy: yes
         src: "{{ certificate_file }}"
         dest: /home/vagrant/certificates
-        exclude: VPN_upgrade_Deutsch-english_v4.1.pdf
         creates: /home/vagrant/certificates/P7S1Root.cer
     - name: clean pw-file
       shell: tr -dc [:graph:] < PW.txt > clean_pw.txt
@@ -68,7 +67,7 @@
         daemon_reload: yes
 
 - name: firewall
-  hosts: all
+  hosts: default
   become_method: sudo
   tasks:
     - name: install iptables-persistent
@@ -107,3 +106,33 @@
     - name: save filter rules
       become: yes
       shell: iptables-save > /etc/iptables/rules.v4
+
+- name: dns server
+  hosts: default
+  become_method: sudo
+  tasks:
+    - name: install bind
+      apt:
+        name: bind9
+    - name: add local forwarders
+      become: yes
+      copy:
+        dest: /etc/bind/forwarders.conf
+        content: |
+          zone "{{ dns_zone }}" {
+            type forward;
+            forward only;
+            forwarders { {{ dns_forwarders }} };
+          };
+    - name: include local forwarders
+      become: yes
+      lineinfile:
+        path: /etc/bind/named.conf.local
+        line: include "/etc/bind/forwarders.conf";
+        regexp: forwarders\.conf
+        insertafter: EOF
+    - name: enable bind9
+      systemd:
+        name: bind9.service
+        state: started
+        enabled: yes
