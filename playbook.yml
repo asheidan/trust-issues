@@ -54,6 +54,18 @@
       copy:
         content: "{{ vpn_password }}"
         dest: /home/vagrant/certificates/user_pw.txt
+    - name: create service file
+      become: yes
+      template:
+        src: vpn-openconnect.service.j2
+        dest: /etc/systemd/system/vpn-openconnect.service
+    - name: enable service
+      become: yes
+      systemd:
+        name: vpn-openconnect.service
+        enabled: yes
+        state: started
+        daemon_reload: yes
 
 - name: firewall
   hosts: all
@@ -87,7 +99,9 @@
         state: present
         reload: yes
     - name: make sure netfilter-persistent is active
-      systemd: name=netfilter-persistent.service enabled=yes
+      systemd:
+        name: netfilter-persistent.service
+        enabled: yes
 
   handlers:
     - name: save filter rules

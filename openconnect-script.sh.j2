@@ -7,50 +7,16 @@ USER={{ vpn_user }}
 GROUP={{ vpn_group }}
 {% endif %}
 
-PACKETTIMEOUT=1000
-KEEPALIVEHOST={{ vpn_keepalivehost }}
-KEEPALIVEDELAY={{ vpn_keepalivedelay }}
-
 #set -v
 # --verbose
 
 pid_file=/var/run/openconnect.pid
 
-vpn_lives() {
-	ps "$(cat $pid_file)" > /dev/null 2>&1
-}
-connection_lives() {
-	ping -c 1 -W ${PACKETTIMEOUT} ${KEEPALIVEHOST} > /dev/null 2>&1
-}
-
-while true; do
-	echo "Starting openconnect"
-	sudo sh <<-EOC && echo "Connected successfully" || exit 1
-		echo "Starting openconnect"
-		openconnect \
-			--pid-file=${pid_file} \
-			--background --cafile=${CERT_DIR}/P7S1Sub.cer \
-			--certificate=${CERT_DIR}/${USER}.pfx \
-			--user=${USER} ${GROUP:+--authgroup=${GROUP}} \
-			--key-password="$(cat ${CERT_DIR}/clean_pw.txt)" \
-			--passwd-on-stdin \
-			${HOST} < "${CERT_DIR}/user_pw.txt"
-		EOC
-
-	echo "Waiting for connection..."
-	while (vpn_lives && ! connection_lives); do
-		sleep 2
-	done
-
-	echo "Starting ping to make sure connection is kept alive"
-	while (vpn_lives && connection_lives); do
-		# echo "${output}" | grep " bytes from " | sed -e 's/.*time=//'
-		sleep "${KEEPALIVEDELAY}"
-	done
-
-	echo "Connection is dead, waiting for openconnect to die..."
-	while vpn_lives; do
-		sleep 1
-	done
-
-done
+exec openconnect \
+	--pid-file=${pid_file} \
+	--background --cafile=${CERT_DIR}/P7S1Sub.cer \
+	--certificate=${CERT_DIR}/${USER}.pfx \
+	--user=${USER} ${GROUP:+--authgroup=${GROUP}} \
+	--key-password="$(cat ${CERT_DIR}/clean_pw.txt)" \
+	--passwd-on-stdin \
+	${HOST} < "${CERT_DIR}/user_pw.txt"

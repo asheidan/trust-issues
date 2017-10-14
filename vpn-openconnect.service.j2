@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenConnect VPN connection
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/vagrant/openconnect-script.sh
+ExecReload=/bin/kill -USR2 $MAINPID
+ExecStop=/bin/kill -INT $MAINPID
+
+PIDFile=/var/run/openconnect.pid
+
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
