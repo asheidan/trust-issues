@@ -11,7 +11,7 @@ ExecStop=/bin/kill -INT $MAINPID
 
 Restart=on-success
 RestartSec=10
-SuccessExitStatus=1
+SuccessExitStatus=1 2
 
 PIDFile=/var/run/openconnect.pid
 
