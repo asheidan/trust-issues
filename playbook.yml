@@ -135,6 +135,7 @@
         insertafter: EOF
       notify: reload bind
     - name: enable bind9
+      become: yes
       systemd:
         name: bind9.service
         state: started
