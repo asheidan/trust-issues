@@ -2,6 +2,8 @@
 
 Having trust issues? Need to install client-provided vpn? Then this is probably for you.
 
+I'm using version 2.4.x of ansible. Earlier versions _might_ work...
+
 ## variables.yml
 
 In order not to leak sensitive information, most settings are extracted to a simple yaml-file called `variables.yml` which should be placed next to the `Vagrantfile`. Below is an example. 
