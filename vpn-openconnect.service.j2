@@ -4,7 +4,7 @@ After=network.target
 Requires=networking.service
 
 [Service]
-Type=fork
+Type=forking
 ExecStart=/home/vagrant/openconnect-script.sh
 ExecReload=/bin/kill -USR2 $MAINPID
 ExecStop=/bin/kill -INT $MAINPID
