@@ -9,6 +9,11 @@
         path: /etc/systemd/logind.conf
         regexp: '^#?RuntimeDirectorySize='
         line: 'RuntimeDirectorySize=15%'
+    - name: set timezone
+      become: yes
+      timezone:
+        name: "{{ timezone }}"
+
 
 - name: openconnect
   hosts: default
