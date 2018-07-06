@@ -13,10 +13,10 @@ GROUP={{ vpn_group }}
 pid_file="/run/openconnect/openconnect.pid"
 
 exec openconnect \
-	--pid-file=${pid_file} \
-	--background --cafile=${CERT_DIR}/P7S1Sub.cer \
-	--certificate=${CERT_DIR}/${USER}.pfx \
-	--user=${USER} ${GROUP:+--authgroup=${GROUP}} \
+	--pid-file="${pid_file}" \
+	--background --cafile="${CERT_DIR}/P7S1Sub.cer" \
+	--certificate="${CERT_DIR}/${USER}.pfx" \
+	--user="${USER}" ${GROUP:+--authgroup="${GROUP}"} \
 	--key-password="$(cat ${CERT_DIR}/clean_pw.txt)" \
 	--passwd-on-stdin \
-	${HOST} < "${CERT_DIR}/user_pw.txt"
+	"${HOST}" < "${CERT_DIR}/user_pw.txt"
