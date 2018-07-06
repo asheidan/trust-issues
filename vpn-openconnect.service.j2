@@ -9,13 +9,12 @@ ExecStart=/home/vagrant/openconnect-script.sh
 ExecReload=/bin/kill -USR2 $MAINPID
 ExecStop=/bin/kill -INT $MAINPID
 
+RuntimeDirectory=openconnect
+PIDFile=/run/openconnect/openconnect.pid
+
 Restart=on-success
 RestartSec=10
 SuccessExitStatus=1 2
-
-PIDFile=/var/run/openconnect.pid
-
-#KillSignal=INT
 
 [Install]
 WantedBy=multi-user.target

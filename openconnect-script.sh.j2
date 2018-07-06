@@ -10,7 +10,7 @@ GROUP={{ vpn_group }}
 #set -v
 # --verbose
 
-pid_file=/var/run/openconnect.pid
+pid_file="/run/openconnect/openconnect.pid"
 
 exec openconnect \
 	--pid-file=${pid_file} \
